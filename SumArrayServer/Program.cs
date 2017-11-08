@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SumArrayServer
+﻿namespace SumArrayServer
 {
 	class Program
 	{
+		private static DataServer dataServer;
+
 		static void Main(string[] args)
 		{
+			dataServer = new DataServer();
+			dataServer.startListening();
 		}
 	}
 }
