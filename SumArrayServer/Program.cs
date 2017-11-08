@@ -8,6 +8,7 @@
 		{
 			dataServer = new DataServer();
 			dataServer.startListening();
+			System.Console.ReadKey();
 		}
 	}
 }

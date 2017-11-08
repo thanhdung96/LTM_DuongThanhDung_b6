@@ -56,14 +56,20 @@ namespace SumArrayServer
 
 			for (int i = 0; i < CLIENT_NUM; i++)		//server accepting 2 clients
 			{
-				dataBlockSizes.Add(netStreams[i].Read(dataReceives, 0, BUFFER_SIZE));	//receive signal from server
+				string signal = "ACK";
+
+				netStreams[i].Read(dataReceives, 0, BUFFER_SIZE);
+				int blockSize = BitConverter.ToInt32(dataReceives, 0);
+				dataBlockSizes.Add(blockSize);	//receive data block size from client
 				Console.WriteLine("Server received data block size from client " + i);
+				dataSends = Encoding.ASCII.GetBytes(signal);		//ACK data block size
+				netStreams[i].Write(dataSends, 0, signal.Length);
 			}
 
 			for (int i = 0; i < CLIENT_NUM; i++)
 			{
-				Console.WriteLine("Server receiving data block from client " + i);
-				for (int j = 0; i < dataBlockSizes[j]; i++)
+				Console.WriteLine("\nServer receiving data block from client " + i);
+				for (int j = 0; j < dataBlockSizes[i]; j++)
 				{
 					string signal = "ACK";
 
@@ -73,7 +79,7 @@ namespace SumArrayServer
 					dataSends = Encoding.ASCII.GetBytes(signal);
 					netStreams[i].Write(dataSends, 0, signal.Length);
 				}
-				Console.WriteLine("Data block from client " + i);
+				Console.WriteLine("\nData block from client " + i);
 				for (int j = 0; j < dataBlockSizes[i]; j++)
 				{
 					Console.Write(dataBlocks[i][j] + " ");
@@ -83,7 +89,7 @@ namespace SumArrayServer
 
 			for (int i = 0; i < CLIENT_NUM; i++)
 			{
-				Console.WriteLine("\nSum of client " + i);
+				Console.WriteLine("\nSum of client " + i + ": " + sums[i]);
 				dataSends = BitConverter.GetBytes(sums[i]);
 				netStreams[i].Write(dataSends, 0, sizeof(int));
 			}

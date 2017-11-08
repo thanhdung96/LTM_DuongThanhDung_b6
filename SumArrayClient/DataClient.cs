@@ -65,7 +65,7 @@ namespace SumArrayClient
 			if (signal == "ACK")		//server received all values in block data and ACKed
 			{
 				//client receive sum result from server
-				netStream.Read(dataReceive, 0, BUFFER_SIZE);	//receive 4 bytes of sum result from server
+				netStream.Read(dataReceive, 0, 4);	//receive 4 bytes of sum result from server
 				int result = BitConverter.ToInt32(dataReceive, 0);
 				Console.WriteLine("Client received sum resutl...");
 				return result;
