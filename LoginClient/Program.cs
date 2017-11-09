@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LoginClient
+﻿namespace LoginClient
 {
 	class Program
 	{
+		private static LoginRequest req;
+
 		static void Main(string[] args)
 		{
+			req = new LoginRequest();
+			req.resquest("dung", "password");
 		}
 	}
 }
