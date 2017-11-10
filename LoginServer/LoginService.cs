@@ -24,6 +24,7 @@ namespace LoginServer
 
 		public LoginService()
 		{
+			Console.WriteLine("Server init components...");
 			server = new TcpListener(new IPEndPoint(IPAddress.Any, 1724));
 			clients = new List<TcpClient>();
 			netStreams = new List<NetworkStream>();
@@ -32,7 +33,8 @@ namespace LoginServer
 
 			users = new Dictionary<string, Dictionary<string, string>>();
 			Dictionary<string, string> temp = new Dictionary<string, string>();
-			temp.Add("encrypted", "Duong Thanh Dung");
+			//md5("dung@password") = 6d5d99f94c4ce287028053ef6ddcfffc
+			temp.Add("6d5d99f94c4ce287028053ef6ddcfffc", "Duong Thanh Dung");	
 			users.Add("dung", temp);
 			usernames = new List<string>();
 			encrypted = new List<string>();
@@ -48,12 +50,27 @@ namespace LoginServer
 		public void start()
 		{
 			server.Start(CLIENT_NUM);
+			Console.WriteLine("Server started listening...");
 
 			Console.WriteLine("Server accepting clients...");
 			for (int i = 0; i < CLIENT_NUM; i++)
 			{
 				acceptClient();
 				Console.WriteLine("Server accepted client " + i);
+			}
+
+			for (int i = 0; i < CLIENT_NUM; i++)		//receiving username from 2 clients
+			{
+				string signal = "ACK";
+
+				dataSize = netStreams[i].Read(dataReceives, 0, BUFFER_SIZE);
+				data = Encoding.ASCII.GetString(dataReceives, 0, dataSize);
+				Console.WriteLine("Received login request from client " + i);
+				if (data == "LOG_REQ")
+				{
+					dataSends = Encoding.ASCII.GetBytes(signal);		//ACK data block size
+					netStreams[i].Write(dataSends, 0, signal.Length);
+				}
 			}
 
 			for (int i = 0; i < CLIENT_NUM; i++)		//receiving username from 2 clients
@@ -108,17 +125,8 @@ namespace LoginServer
 
 		private String findUser(string username, string encrypted)
 		{
-			Dictionary<string, string> temp = users[username];
-			if(temp == null)		//if username not found
-				return null;
-			else		//if username found
-			{
-				String displayName = temp[encrypted];
-				if (displayName == null)
-					return null;
-				else
-					return displayName;
-			}
+			string ret = users[username][encrypted];
+			return ret == null ? null : ret;
 		}
 	}
 }

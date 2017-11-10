@@ -14,8 +14,6 @@ namespace LoginClient
 		private byte[] dataSend, dataReceive;
 		private int dataSize;
 
-		private string username, password;
-
 		public LoginRequest()
 		{
 			Console.WriteLine("Client init components...");
@@ -38,13 +36,14 @@ namespace LoginClient
 			string raw = username + "@" + password;		//prepare login info
 			MD5Encrypt md5 = new MD5Encrypt(raw);
 			string encrypted = md5.getHash();
+			Console.WriteLine("Encrypted data: " + encrypted);
 
 			data = "LOG_REQ";			//send login request to server
 			dataSend = Encoding.ASCII.GetBytes(data);
 			netStream.Write(dataSend, 0, data.Length);
 			Console.WriteLine("Client sent login request...");
 
-			dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from client
+			dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from server
 			data = Encoding.ASCII.GetString(dataReceive, 0, dataSize);
 
 			//send username and encrypted to server for authentication
@@ -52,20 +51,23 @@ namespace LoginClient
 			{
 				//send username to server
 				dataSend = Encoding.ASCII.GetBytes(username);
-				netStream.Write(dataSend, 0, data.Length);
+				netStream.Write(dataSend, 0, username.Length);
 				dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from server
 				data = Encoding.ASCII.GetString(dataReceive, 0, dataSize);
 				Console.WriteLine("Client sent username...");
 			}
 			if (data == "ACK")
 			{
-				//send username to server
-				dataSend = Encoding.ASCII.GetBytes(raw);
-				netStream.Write(dataSend, 0, data.Length);
+				//send encrypted data to server
+				dataSend = Encoding.ASCII.GetBytes(encrypted);
+				netStream.Write(dataSend, 0, encrypted.Length);
 				dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from server
 				data = Encoding.ASCII.GetString(dataReceive, 0, dataSize);
 				Console.WriteLine("Client sent encrypted data...");
 			}
+
+			dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from server
+			data = Encoding.ASCII.GetString(dataReceive, 0, dataSize);
 			if (data == "LOG_OK")		//if serve ACKs request
 			{
 				dataSize = netStream.Read(dataReceive, 0, BUFFER_SIZE);		//receiving respond from server
