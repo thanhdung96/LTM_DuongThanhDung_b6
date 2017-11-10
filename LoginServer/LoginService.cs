@@ -34,7 +34,7 @@ namespace LoginServer
 			users = new Dictionary<string, Dictionary<string, string>>();
 			Dictionary<string, string> temp = new Dictionary<string, string>();
 			//md5("dung@password") = 6d5d99f94c4ce287028053ef6ddcfffc
-			temp.Add("6d5d99f94c4ce287028053ef6ddcfffc", "Duong Thanh Dung");	
+			temp.Add("6d5d99f94c4ce287028053ef6ddcfffc", "Duong Thanh Dung");
 			users.Add("dung", temp);
 			usernames = new List<string>();
 			encrypted = new List<string>();
@@ -76,7 +76,7 @@ namespace LoginServer
 			for (int i = 0; i < CLIENT_NUM; i++)		//receiving username from 2 clients
 			{
 				string signal = "ACK";
-				
+
 				dataSize = netStreams[i].Read(dataReceives, 0, BUFFER_SIZE);
 				data = Encoding.ASCII.GetString(dataReceives, 0, dataSize);
 				Console.WriteLine("Received username from client " + i + ": " + data);
@@ -100,17 +100,10 @@ namespace LoginServer
 			for (int i = 0; i < CLIENT_NUM; i++)		//sending respond
 			{
 				string signal;
-				String displayName = findUser(usernames[i], encrypted[i]);
-				if (displayName == null)	//if user not exist
+				try
 				{
-					//send "LOG_FAIL" to client
-					//continue to next loop
-					signal = "LOG_FAIL";
-					dataSends = Encoding.ASCII.GetBytes(signal);		//ACK data block size
-					netStreams[i].Write(dataSends, 0, signal.Length);
-				}
-				else	//if user exist
-				{
+					String displayName = findUser(usernames[i], encrypted[i]);
+					//if user exist
 					//send "LOG_OK" to client
 					//send display name found to client to client
 					signal = "LOG_OK";
@@ -120,13 +113,27 @@ namespace LoginServer
 					dataSends = Encoding.ASCII.GetBytes(displayName);
 					netStreams[i].Write(dataSends, 0, displayName.Length);
 				}
+				catch (KeyNotFoundException)
+				{
+					//send "LOG_FAIL" to client
+					//continue to next loop
+					signal = "LOG_FAIL";
+					dataSends = Encoding.ASCII.GetBytes(signal);		//ACK data block size
+					netStreams[i].Write(dataSends, 0, signal.Length);
+				}
 			}
 		}
 
 		private String findUser(string username, string encrypted)
 		{
-			string ret = users[username][encrypted];
-			return ret == null ? null : ret;
+			try
+			{
+				return users[username][encrypted];
+			}
+			catch
+			{
+				throw new KeyNotFoundException();
+			}
 		}
 	}
 }
